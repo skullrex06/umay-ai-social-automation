@@ -1,1 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UMAY AI Social Automation</title>
+<style>
+:root{color-scheme:dark;font-family:Arial,sans-serif;background:#101827;color:#edf2f7}
+body{margin:0;padding:18px;max-width:760px;margin:auto}
+h1{font-size:25px;margin:8px 0}.muted{color:#9caec4;font-size:13px}
+.card{background:#182438;border:1px solid #2b3b53;border-radius:14px;padding:16px;margin:14px 0}
+label{display:block;font-size:13px;color:#b9c7d8;margin:12px 0 6px}
+input,textarea,select{width:100%;box-sizing:border-box;background:#0f1a2a;color:white;border:1px solid #40516b;border-radius:9px;padding:12px;font-size:15px}
+textarea{min-height:110px}
+button{border:0;border-radius:9px;background:#2674e8;color:white;padding:12px 16px;font-weight:bold;margin-top:12px}
+button.secondary{background:#33465f}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+.item{border-top:1px solid #34445b;padding:12px 0;overflow-wrap:anywhere}
+.status{font-size:12px;color:#9cc4ff}
+</style>
+</head>
+<body>
+<h1>UMAY AI SOCIAL AUTOMATION</h1>
+<div class="muted">RM0 starter · Page auto-publish (text/photo) · Profile/Reels manual queue</div>
 
+<section class="card">
+  <label>Worker API URL</label>
+  <input id="api" placeholder="https://your-worker.workers.dev">
+  <label>Admin token</label>
+  <input id="token" type="password" placeholder="Your ADMIN_TOKEN">
+  <button onclick="loadPosts()">Connect / Refresh</button>
+  <div id="health" class="muted"></div>
+</section>
+
+<section class="card">
+  <h3>Create content queue item</h3>
+  <div class="row">
+    <div><label>Destination</label><select id="destination"><option value="page">Facebook Page</option><option value="profile">Professional Profile (manual)</option></select></div>
+    <div><label>Format</label><select id="format"><option value="text">Text</option><option value="photo">Single image</option><option value="reel">Reel (manual)</option></select></div>
+  </div>
+  <label>Caption / script</label>
+  <textarea id="caption" placeholder="Write original content and include source notes where needed"></textarea>
+  <label>Public HTTPS image URL (photo only)</label>
+  <input id="media" placeholder="https://...">
+  <button onclick="createPost()">Save to queue</button>
+  <div id="message" class="muted"></div>
+</section>
+
+<section class="card">
+  <h3>Content queue</h3>
+  <div class="muted">Page text/photo drafts can be scheduled. Profile posts and Reels are manual tasks.</div>
+  <div id="posts" class="muted">Connect to load posts.</div>
+</section>
+
+<script>
+const el=id=>document.getElementById(id);
+function config(){return {api:el("api").value.trim().replace(/\/$/,""),token:el("token").value.trim()}}
+async function call(path,opts={}){
+ const c=config(); if(!c.api||!c.token) throw Error("Enter Worker URL and admin token.");
+ const r=await fetch(c.api+path,{...opts,headers:{"Authorization":"Bearer "+c.token,"Content-Type":"application/json",...(opts.headers||{})}});
+ const d=await r.json(); if(!r.ok) throw Error(d.error||"Request failed"); return d;
+}
+async function loadPosts(){
+ try{
+  const c=config(); const h=await fetch(c.api+"/api/health"); el("health").textContent=h.ok?"Worker reachable":"Worker unavailable";
+  const d=await call("/api/posts"); el("posts").innerHTML="";
+  (d.posts||[]).forEach(p=>{
+   const div=document.createElement("div");div.className="item";
+   const title=document.createElement("strong");title.textContent=`${p.destination.toUpperCase()} · ${p.format.toUpperCase()} · ${p.status}`;
+   const body=document.createElement("p");body.textContent=p.caption;
+   const meta=document.createElement("div");meta.className="muted";meta.textContent=`${p.created_at||""} ${p.scheduled_at||""}`;
+   div.append(title,body,meta);
+   if(p.status==="draft"&&p.destination==="page"&&p.format!=="reel"){
+    const b=document.createElement("button");b.textContent="Schedule in 1 minute";
+    b.onclick=async()=>{try{await call(`/api/posts/${p.id}/approve`,{method:"POST",body:JSON.stringify({scheduled_at:new Date(Date.now()+60000).toISOString()})});loadPosts()}catch(e){alert(e.message)}};
+    div.append(b);
+   }
+   el("posts").append(div);
+  });
+ }catch(e){el("health").textContent=e.message}
+}
+async function createPost(){
+ try{
+  const d=await call("/api/posts",{method:"POST",body:JSON.stringify({
+   destination:el("destination").value,format:el("format").value,
+   caption:el("caption").value,media_url:el("media").value||null
+  })});
+  el("message").textContent=`Saved: ${d.id} · ${d.status}`;
+  el("caption").value="";loadPosts();
+ }catch(e){el("message").textContent=e.message}
+}
+</script>
+</body>
+</html>

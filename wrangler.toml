@@ -13,5 +13,11 @@ run_worker_first = ["/api/*"]
 binding = "DB"
 database_name = "umay-social-db"
 database_id = "1190e781-c81e-486d-bf84-7db86dd47648"
+
 [ai]
 binding = "AI"
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "umay-social-images"
+

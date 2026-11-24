@@ -130,6 +130,7 @@ async function loadPosts(){
 }
 
 let generatedImage = "";
+let generatedMediaUrl = "";
 
 async function generateImage(){
  const topic = el("imageTopic").value.trim();
@@ -158,11 +159,17 @@ async function generateImage(){
   if(!d.image) throw Error("No image returned.");
 
   generatedImage = d.image;
-  el("imagePreview").src = generatedImage;
+generatedMediaUrl = d.media_url || "";
+
+if(!generatedMediaUrl) {
+  throw Error("Image saved, but public media URL was not returned.");
+}
+
+el("imagePreview").src = generatedImage;
   el("imagePreview").style.display = "block";
   el("downloadImage").style.display = "inline-block";
-  el("imageMessage").textContent = "Image generated successfully.";
-
+el("useImageButton").style.display = "inline-block";
+el("imageMessage").textContent = "Image generated and saved.";
  }catch(e){
   el("imageMessage").textContent = e.message;
  }finally{
@@ -170,7 +177,24 @@ async function generateImage(){
   button.textContent = "Generate AI Image";
  }
 }
+function useGeneratedImage(){
+ if(!generatedMediaUrl){
+  el("imageMessage").textContent = "Generate and save an image first.";
+  return;
+ }
 
+ el("media").value = generatedMediaUrl;
+ el("destination").value = "page";
+ el("format").value = "photo";
+
+ el("message").textContent =
+  "Image attached. Review caption and press Save to queue.";
+
+ el("caption").scrollIntoView({
+  behavior:"smooth",
+  block:"center"
+ });
+}
 function downloadGeneratedImage(){
  if(!generatedImage) return;
 

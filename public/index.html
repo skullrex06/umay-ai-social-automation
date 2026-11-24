@@ -133,6 +133,32 @@ if(p.error_message){
   err.textContent="ERROR: "+p.error_message;
   div.append(err);
 }
+    
+   if(p.status==="failed" && p.destination==="page" &&
+      ["text","photo"].includes(p.format)){
+    const retryButton = document.createElement("button");
+    retryButton.textContent = "Retry Post";
+    retryButton.onclick = async () => {
+      if(!confirm("Retry this Facebook post? Check the Page first to avoid duplicates.")) return;
+
+      retryButton.disabled = true;
+      retryButton.textContent = "Retrying...";
+
+      try{
+        await call(`/api/posts/${p.id}/retry`, {
+          method:"POST",
+          body:JSON.stringify({})
+        });
+        await loadPosts();
+      }catch(e){
+        alert(e.message);
+        retryButton.disabled = false;
+        retryButton.textContent = "Retry Post";
+      }
+    };
+    div.append(retryButton);
+   }
+
    if(p.status==="draft"&&p.destination==="page"&&p.format!=="reel"){
     const b=document.createElement("button");b.textContent="Schedule in 1 minute";
     b.onclick=async()=>{try{await call(`/api/posts/${p.id}/approve`,{method:"POST",body:JSON.stringify({scheduled_at:new Date(Date.now()+60000).toISOString()})});loadPosts()}catch(e){alert(e.message)}};

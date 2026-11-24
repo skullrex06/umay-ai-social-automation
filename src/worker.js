@@ -155,8 +155,7 @@ export default {
         }, 502), request);
       }
     }
-
-
+    if (url.pathname === "/api/generate" && request.method === "POST") {
             if (!authorized(request, env)) {
         return withCors(json({ error: "Unauthorized." }, 401), request);
       }

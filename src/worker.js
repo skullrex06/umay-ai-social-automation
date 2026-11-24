@@ -114,6 +114,68 @@ export default {
     if (url.pathname === "/api/health" && request.method === "GET") {
       return withCors(json({ ok: true, service: "UMAY AI SOCIAL AUTOMATION", time: new Date().toISOString() }), request);
     }
+     
+    if (url.pathname === "/api/generate" && request.method === "POST") {
+      if (!env.AI) {
+        return withCors(json({ error: "Workers AI binding AI is missing." }, 503), request);
+      }
+
+      const data = await request.json().catch(() => null);
+      const topic = String(data?.topic || "").trim();
+
+      if (!topic) {
+        return withCors(json({ error: "Enter a topic." }, 400), request);
+      }
+
+      const language = String(data.language || "English").slice(0, 40);
+      const niche = String(data.niche || "general").slice(0, 100);
+      const tone = String(data.tone || "engaging and informative").slice(0, 80);
+
+      const prompt = [
+        "Write one original Facebook Page post in " + language + ".",
+        "Niche: " + niche,
+        "Topic: " + topic,
+        "Tone: " + tone,
+        "Requirements:",
+        "- Start with a strong hook.",
+        "- Provide useful and accurate information.",
+        "- Use short mobile-friendly paragraphs.",
+        "- Add a natural call to action where appropriate.",
+        "- Add 3 to 5 relevant hashtags.",
+        "- Never invent statistics or sources.",
+        "- Return only the finished post."
+      ].join("\n");
+
+      try {
+        const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional social media content writer."
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          max_tokens: 700,
+          temperature: 0.8
+        });
+
+        const caption = String(result?.response || "").trim();
+
+        if (!caption) {
+          throw new Error("AI returned an empty response.");
+        }
+
+        return withCors(json({ caption }), request);
+
+      } catch (err) {
+        return withCors(json({
+          error: String(err.message || err)
+        }, 502), request);
+      }
+    }
 
     if (!authorized(request, env)) {
       return withCors(json({ error: "Unauthorized. Configure ADMIN_TOKEN and send a Bearer token." }, 401), request);

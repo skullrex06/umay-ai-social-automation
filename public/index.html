@@ -142,7 +142,41 @@ if(p.error_message){
   });
  }catch(e){el("health").textContent=e.message}
 }
+async function loadActivity(){
+  try{
+    const d = await call("/api/activity");
+    const list = el("activityList");
+    list.innerHTML = "";
 
+    if(!d.activities || !d.activities.length){
+      list.textContent = "No activity recorded.";
+      return;
+    }
+
+    d.activities.forEach(a=>{
+      const item = document.createElement("div");
+      item.className = "item";
+
+      const title = document.createElement("strong");
+      title.textContent =
+        (a.event || "unknown").toUpperCase() +
+        " · " + (a.format || "").toUpperCase();
+
+      const detail = document.createElement("p");
+      detail.textContent = a.detail || a.caption || "";
+
+      const time = document.createElement("div");
+      time.className = "muted";
+      time.textContent = a.created_at || "";
+
+      item.append(title, detail, time);
+      list.append(item);
+    });
+
+  }catch(e){
+    el("activityList").textContent = e.message;
+  }
+}
 let generatedImage = "";
 let generatedMediaUrl = "";
 

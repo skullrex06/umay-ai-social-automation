@@ -8,4 +8,4 @@ crons = ["*/15 * * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "umay-social-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "1190e781-c81e-486d-bf84-7db86dd47648"

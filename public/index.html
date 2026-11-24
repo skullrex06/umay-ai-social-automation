@@ -62,6 +62,23 @@ button.secondary{background:#33465f}
 </section>
 
 <section class="card">
+  <h3>AI Image Generator</h3>
+  <div class="muted">Generate original images from your content idea.</div>
+
+  <label>Image Topic</label>
+  <input id="imageTopic" placeholder="Example: A lone survivor stranded on a tropical island">
+
+  <button id="imageButton" onclick="generateImage()">Generate AI Image</button>
+  <div id="imageMessage" class="muted"></div>
+
+  <img id="imagePreview" style="display:none;width:100%;border-radius:12px;margin-top:14px">
+
+  <button id="downloadImage" style="display:none" onclick="downloadGeneratedImage()">
+    Download Image
+  </button>
+</section>
+
+<section class="card">
   <h3>Create content queue item</h3>
   <div class="row">
     <div><label>Destination</label><select id="destination"><option value="page">Facebook Page</option><option value="profile">Professional Profile (manual)</option></select></div>

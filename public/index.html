@@ -100,6 +100,16 @@ button.secondary{background:#33465f}
   <div class="muted">Page text/photo drafts can be scheduled. Profile posts and Reels are manual tasks.</div>
   <div id="posts" class="muted">Connect to load posts.</div>
 </section>
+  
+<section class="card">
+  <h3>System Health Check</h3>
+  <div class="muted">Check Worker, database, AI, storage and Meta configuration.</div>
+  <button onclick="runDiagnostics()">Run Health Check</button>
+  <div id="diagnosticsResult" class="muted">
+    Press Run Health Check to inspect the system.
+  </div>
+</section>
+
 <section class="card">
   <h3>Activity Log</h3>
   <div class="muted">Latest 100 system activities.</div>

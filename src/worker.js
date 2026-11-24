@@ -292,6 +292,101 @@ if (!caption) {
     if (!authorized(request, env)) {
       return withCors(json({ error: "Unauthorized. Configure ADMIN_TOKEN and send a Bearer token." }, 401), request);
     }
+
+    
+    if (url.pathname === "/api/diagnostics" && request.method === "GET") {
+      const checks = [];
+
+      checks.push({
+        name: "Worker",
+        status: "PASS",
+        detail: "Worker is responding."
+      });
+
+      checks.push({
+        name: "Meta Page ID",
+        status: env.META_PAGE_ID ? "CONFIGURED" : "MISSING",
+        detail: env.META_PAGE_ID ? "Page ID exists." : "Page ID secret is missing."
+      });
+
+      checks.push({
+        name: "Meta Page Token",
+        status: env.META_PAGE_ACCESS_TOKEN ? "CONFIGURED" : "MISSING",
+        detail: env.META_PAGE_ACCESS_TOKEN
+          ? "Token exists. Validity not tested."
+          : "Page token secret is missing."
+      });
+
+      checks.push({
+        name: "Meta Graph Version",
+        status: env.META_GRAPH_VERSION ? "CONFIGURED" : "DEFAULT",
+        detail: env.META_GRAPH_VERSION || "Using code default."
+      });
+
+      checks.push({
+        name: "Workers AI",
+        status: env.AI ? "CONFIGURED" : "MISSING",
+        detail: env.AI ? "AI binding exists." : "AI binding missing."
+      });
+
+      try {
+        await env.DB.prepare("SELECT 1 AS ok").first();
+        const posts = await env.DB.prepare(
+          "SELECT COUNT(*) AS total FROM posts"
+        ).first();
+        const activities = await env.DB.prepare(
+          "SELECT COUNT(*) AS total FROM activity_log"
+        ).first();
+
+        checks.push({
+          name: "D1 Database",
+          status: "PASS",
+          detail: "Database connected."
+        });
+
+        checks.push({
+          name: "Post Records",
+          status: "PASS",
+          detail: String(posts.total) + " records."
+        });
+
+        checks.push({
+          name: "Activity Log",
+          status: "PASS",
+          detail: String(activities.total) + " records."
+        });
+      } catch (err) {
+        checks.push({
+          name: "D1 Database",
+          status: "FAIL",
+          detail: String(err.message || err)
+        });
+      }
+
+      try {
+        if (!env.IMAGES) throw new Error("R2 binding missing.");
+        await env.IMAGES.list({ limit: 1 });
+
+        checks.push({
+          name: "R2 Image Storage",
+          status: "PASS",
+          detail: "R2 bucket is accessible."
+        });
+      } catch (err) {
+        checks.push({
+          name: "R2 Image Storage",
+          status: "FAIL",
+          detail: String(err.message || err)
+        });
+      }
+
+      return withCors(json({
+        service: "UMAY AI SOCIAL AUTOMATION",
+        checked_at: new Date().toISOString(),
+        checks
+      }), request);
+    }
+
 if (url.pathname === "/api/activity" && request.method === "GET") {
   const { results } = await env.DB.prepare(
     `SELECT

@@ -24,6 +24,35 @@ button.secondary{background:#33465f}
 <div class="muted">RM0 starter · Page auto-publish (text/photo) · Profile/Reels manual queue</div>
 
 <section class="card">
+  <h3>AI Content Generator</h3>
+  <div class="muted">Generate and review content before publishing.</div>
+
+  <label>Topic / Content Idea</label>
+  <input id="aiTopic" placeholder="Example: 5 survival mistakes in the jungle">
+
+  <label>Niche</label>
+  <input id="aiNiche" value="How to Survive">
+
+  <label>Language</label>
+  <select id="aiLanguage">
+    <option>English</option>
+    <option>Bahasa Melayu</option>
+    <option>中文</option>
+  </select>
+
+  <label>Writing Style</label>
+  <select id="aiTone">
+    <option value="curiosity-driven, engaging and informative">Curiosity Hook</option>
+    <option value="educational, clear and practical">Educational</option>
+    <option value="dramatic but factual">Dramatic Storytelling</option>
+    <option value="friendly and conversational">Conversational</option>
+  </select>
+
+  <button id="generateButton" onclick="generateAI()">Generate AI Caption</button>
+  <div id="aiMessage" class="muted"></div>
+</section>
+
+<section class="card">
   <label>Worker API URL</label>
   <input id="api" placeholder="https://your-worker.workers.dev">
   <label>Admin token</label>

@@ -162,9 +162,39 @@ export default {
           { prompt, steps: 4 }
         );
 
+        
         if (!result?.image) {
           throw new Error("Image model returned no image.");
         }
+
+        if (!env.IMAGES) {
+          throw new Error("R2 binding IMAGES is missing.");
+        }
+
+        const binary = Uint8Array.from(
+          atob(result.image),
+          c => c.charCodeAt(0)
+        );
+
+        const key = crypto.randomUUID() + ".jpg";
+
+        await env.IMAGES.put(key, binary, {
+          httpMetadata: {
+            contentType: "image/jpeg"
+          }
+        });
+
+        const mediaUrl = new URL(
+          "/media/" + key,
+          request.url
+        ).toString();
+
+        return withCors(json({
+          image: "data:image/jpeg;base64," + result.image,
+          media_url: mediaUrl,
+          key
+        }), request);
+
 
         return withCors(json({
           image: "data:image/jpeg;charset=utf-8;base64," + result.image

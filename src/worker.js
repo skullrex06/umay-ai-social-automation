@@ -150,7 +150,7 @@ export default {
       ].join("\n");
 
       try {
-        const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+        const result = await env.AI.run("@cf/qwen/qwen3.8-27b", {
           messages: [
             {
               role: "system",

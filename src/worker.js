@@ -116,6 +116,60 @@ export default {
     }
      
     if (url.pathname === "/api/generate" && request.method === "POST") {
+      
+    if (url.pathname === "/api/generate-image" && request.method === "POST") {
+      if (!authorized(request, env)) {
+        return withCors(json({ error: "Unauthorized." }, 401), request);
+      }
+
+      if (!env.AI) {
+        return withCors(json({ error: "Workers AI binding AI is missing." }, 503), request);
+      }
+
+      const data = await request.json().catch(() => null);
+      const topic = String(data?.topic || "").trim();
+      const niche = String(data?.niche || "general").trim();
+
+      if (!topic) {
+        return withCors(json({ error: "Enter an image topic." }, 400), request);
+      }
+
+      const prompt = [
+        "Create a high-quality, photorealistic editorial photograph for a Facebook social media post.",
+        "Subject: " + topic,
+        "Niche: " + niche,
+        "Composition: cinematic professional photography, clear focal subject, realistic natural details.",
+        "Lighting: realistic dramatic lighting, balanced exposure, sharp focus.",
+        "Composition must be suitable for a square social media image.",
+        "Do not include text, letters, captions, logos, watermarks, borders or typography.",
+        "Make the scene visually compelling and believable."
+      ].join(" ");
+
+      try {
+        const result = await env.AI.run(
+          "@cf/black-forest-labs/flux-1-schnell",
+          {
+            prompt,
+            steps: 4
+          }
+        );
+
+        if (!result?.image) {
+          throw new Error("Image model returned no image.");
+        }
+
+        return withCors(json({
+          image: "data:image/jpeg;base64," + result.image,
+          prompt
+        }), request);
+
+      } catch (err) {
+        return withCors(json({
+          error: String(err.message || err)
+        }, 502), request);
+      }
+    }
+
             if (!authorized(request, env)) {
         return withCors(json({ error: "Unauthorized." }, 401), request);
       }

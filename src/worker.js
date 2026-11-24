@@ -161,8 +161,12 @@ export default {
               content: prompt
             }
           ],
-          max_tokens: 700,
-          temperature: 0.8
+          max_completion_tokens: 1200,
+reasoning_effort: "low",
+chat_template_kwargs: {
+  enable_thinking: false
+},
+temperature: 0.8
         });
 
         const rawCaption =

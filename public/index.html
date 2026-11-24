@@ -138,9 +138,14 @@ if(p.error_message){
     b.onclick=async()=>{try{await call(`/api/posts/${p.id}/approve`,{method:"POST",body:JSON.stringify({scheduled_at:new Date(Date.now()+60000).toISOString()})});loadPosts()}catch(e){alert(e.message)}};
     div.append(b);
    }
-   el("posts").append(div);
+      el("posts").append(div);
   });
- }catch(e){el("health").textContent=e.message}
+
+  await loadActivity();
+
+ }catch(e){
+  el("health").textContent=e.message;
+ }
 }
 async function loadActivity(){
   try{

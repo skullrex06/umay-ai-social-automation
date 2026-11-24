@@ -340,7 +340,70 @@ if (url.pathname === "/api/activity" && request.method === "GET") {
       await log(env, id, "created", status);
       return withCors(json({ id, status, note: manual ? "Manual publishing required." : "Draft created." }, 201), request);
     }
+    const retryMatch = url.pathname.match(/^\/api\/posts\/([a-f0-9-]+)\/retry$/i);
+    if (retryMatch && request.method === "POST") {
+      const id = retryMatch[1];
 
+      const post = await env.DB.prepare(
+        "SELECT * FROM posts WHERE id=?"
+      ).bind(id).first();
+
+      if (!post) {
+        return withCors(json({ error: "Post not found." }, 404), request);
+      }
+
+      if (post.status !== "failed") {
+        return withCors(json({
+          error: "Only failed posts can be retried."
+        }, 409), request);
+      }
+
+      if (post.destination !== "page" ||
+          !["text", "photo"].includes(post.format)) {
+        return withCors(json({
+          error: "Only Facebook Page text/photo posts can be retried."
+        }, 409), request);
+      }
+
+      const errorText = String(post.error_message || "").toLowerCase();
+
+      const safeTokenError =
+        errorText.includes("error validating access token") ||
+        errorText.includes("session has expired") ||
+        errorText.includes("invalid oauth access token");
+
+      if (!safeTokenError) {
+        return withCors(json({
+          error: "Retry blocked to prevent duplicate posts. Verify the Facebook Page first."
+        }, 409), request);
+      }
+
+      const scheduledAt = new Date(Date.now() + 60000).toISOString();
+
+      const update = await env.DB.prepare(
+        `UPDATE posts
+         SET status='scheduled', scheduled_at=?,
+             error_message=NULL, updated_at=CURRENT_TIMESTAMP
+         WHERE id=? AND status='failed'`
+      ).bind(scheduledAt, id).run();
+
+      if (!update.meta || update.meta.changes !== 1) {
+        return withCors(json({
+          error: "Post status changed. Refresh the dashboard."
+        }, 409), request);
+      }
+
+      await log(env, id, "retry_scheduled", scheduledAt);
+
+      return withCors(json({
+        id,
+        status: "scheduled",
+        scheduled_at: scheduledAt,
+        note: "Retry scheduled. Check Facebook after the next Cron run."
+      }), request);
+    }
+
+    
     const approveMatch = url.pathname.match(/^\/api\/posts\/([a-f0-9-]+)\/approve$/i);
     if (approveMatch && request.method === "POST") {
       const id = approveMatch[1];

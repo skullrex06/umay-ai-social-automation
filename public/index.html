@@ -194,6 +194,39 @@ async function loadActivity(){
       return;
     }
 
+async function runDiagnostics(){
+  const result = el("diagnosticsResult");
+  result.textContent = "Checking system...";
+
+  try{
+    const d = await call("/api/diagnostics");
+    result.innerHTML = "";
+
+    d.checks.forEach(check=>{
+      const item = document.createElement("div");
+      item.className = "item";
+
+      const title = document.createElement("strong");
+      title.textContent = check.name + " — " + check.status;
+
+      const detail = document.createElement("p");
+      detail.textContent = check.detail;
+
+      if(check.status === "FAIL" || check.status === "MISSING"){
+        title.style.color = "#ff6b6b";
+      }else if(check.status === "PASS"){
+        title.style.color = "#5bd69a";
+      }
+
+      item.append(title,detail);
+      result.append(item);
+    });
+
+  }catch(e){
+    result.textContent = "Health check failed: " + e.message;
+  }
+}
+
     d.activities.forEach(a=>{
       const item = document.createElement("div");
       item.className = "item";

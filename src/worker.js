@@ -115,8 +115,7 @@ export default {
       return withCors(json({ ok: true, service: "UMAY AI SOCIAL AUTOMATION", time: new Date().toISOString() }), request);
     }
      
-    if (url.pathname === "/api/generate" && request.method === "POST") {
-      
+    
     if (url.pathname === "/api/generate-image" && request.method === "POST") {
       if (!authorized(request, env)) {
         return withCors(json({ error: "Unauthorized." }, 401), request);
@@ -134,24 +133,12 @@ export default {
         return withCors(json({ error: "Enter an image topic." }, 400), request);
       }
 
-      const prompt = [
-        "Create a high-quality, photorealistic editorial photograph for a Facebook social media post.",
-        "Subject: " + topic,
-        "Niche: " + niche,
-        "Composition: cinematic professional photography, clear focal subject, realistic natural details.",
-        "Lighting: realistic dramatic lighting, balanced exposure, sharp focus.",
-        "Composition must be suitable for a square social media image.",
-        "Do not include text, letters, captions, logos, watermarks, borders or typography.",
-        "Make the scene visually compelling and believable."
-      ].join(" ");
+      const prompt = `Photorealistic cinematic editorial photograph. Subject: ${topic}. Niche: ${niche}. Square composition, professional photography, realistic details, dramatic natural lighting. No text, logo or watermark.`;
 
       try {
         const result = await env.AI.run(
           "@cf/black-forest-labs/flux-1-schnell",
-          {
-            prompt,
-            steps: 4
-          }
+          { prompt, steps: 4 }
         );
 
         if (!result?.image) {
@@ -159,8 +146,7 @@ export default {
         }
 
         return withCors(json({
-          image: "data:image/jpeg;base64," + result.image,
-          prompt
+          image: "data:image/jpeg;charset=utf-8;base64," + result.image
         }), request);
 
       } catch (err) {
@@ -169,6 +155,7 @@ export default {
         }, 502), request);
       }
     }
+
 
             if (!authorized(request, env)) {
         return withCors(json({ error: "Unauthorized." }, 401), request);

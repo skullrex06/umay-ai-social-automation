@@ -100,7 +100,14 @@ button.secondary{background:#33465f}
   <div class="muted">Page text/photo drafts can be scheduled. Profile posts and Reels are manual tasks.</div>
   <div id="posts" class="muted">Connect to load posts.</div>
 </section>
-
+<section class="card">
+  <h3>Activity Log</h3>
+  <div class="muted">Latest 100 system activities.</div>
+  <button class="secondary" onclick="loadActivity()">Refresh Activity</button>
+  <div id="activityList" class="muted">
+    Connect to load activity.
+  </div>
+</section>
 <script>
 const el=id=>document.getElementById(id);
 function config(){return {api:el("api").value.trim().replace(/\/$/,""),token:el("token").value.trim()}}

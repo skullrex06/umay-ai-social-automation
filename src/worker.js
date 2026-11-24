@@ -180,8 +180,8 @@ const caption = (
 
 if (!caption) {
   throw new Error(
-    "AI returned no text. Response keys: " +
-    Object.keys(result || {}).join(", ")
+    "AI response diagnostic: " +
+    JSON.stringify(result?.choices?.[0] ?? result).slice(0, 1500)
   );
 }
 

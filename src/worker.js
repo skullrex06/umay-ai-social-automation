@@ -116,6 +116,27 @@ export default {
     }
      
     
+    if (url.pathname.startsWith("/media/") && request.method === "GET") {
+      const key = decodeURIComponent(url.pathname.slice(7));
+
+      if (!key || key.includes("..") || key.includes("/")) {
+        return withCors(json({ error: "Invalid image key." }, 400), request);
+      }
+
+      const object = await env.IMAGES.get(key);
+
+      if (!object) {
+        return withCors(json({ error: "Image not found." }, 404), request);
+      }
+
+      const headers = new Headers();
+      object.writeHttpMetadata(headers);
+      headers.set("Cache-Control", "public, max-age=31536000");
+      headers.set("Access-Control-Allow-Origin", "*");
+
+      return new Response(object.body, { headers });
+    }
+
     if (url.pathname === "/api/generate-image" && request.method === "POST") {
       if (!authorized(request, env)) {
         return withCors(json({ error: "Unauthorized." }, 401), request);

@@ -126,6 +126,57 @@ async function loadPosts(){
  }catch(e){el("health").textContent=e.message}
 }
 
+let generatedImage = "";
+
+async function generateImage(){
+ const topic = el("imageTopic").value.trim();
+
+ if(!topic){
+  el("imageMessage").textContent = "Enter an image topic first.";
+  return;
+ }
+
+ const button = el("imageButton");
+ button.disabled = true;
+ button.textContent = "Generating image...";
+ el("imageMessage").textContent = "Please wait...";
+ el("imagePreview").style.display = "none";
+ el("downloadImage").style.display = "none";
+
+ try{
+  const d = await call("/api/generate-image",{
+   method:"POST",
+   body:JSON.stringify({
+    topic,
+    niche:el("aiNiche").value || "general"
+   })
+  });
+
+  if(!d.image) throw Error("No image returned.");
+
+  generatedImage = d.image;
+  el("imagePreview").src = generatedImage;
+  el("imagePreview").style.display = "block";
+  el("downloadImage").style.display = "inline-block";
+  el("imageMessage").textContent = "Image generated successfully.";
+
+ }catch(e){
+  el("imageMessage").textContent = e.message;
+ }finally{
+  button.disabled = false;
+  button.textContent = "Generate AI Image";
+ }
+}
+
+function downloadGeneratedImage(){
+ if(!generatedImage) return;
+
+ const a = document.createElement("a");
+ a.href = generatedImage;
+ a.download = "umay-ai-image.png";
+ a.click();
+}
+
 async function generateAI(){
  const topic=el("aiTopic").value.trim();
  if(!topic){

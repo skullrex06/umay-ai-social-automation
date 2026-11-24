@@ -292,7 +292,29 @@ if (!caption) {
     if (!authorized(request, env)) {
       return withCors(json({ error: "Unauthorized. Configure ADMIN_TOKEN and send a Bearer token." }, 401), request);
     }
+if (url.pathname === "/api/activity" && request.method === "GET") {
+  const { results } = await env.DB.prepare(
+    `SELECT
+       activity_log.id,
+       activity_log.post_id,
+       activity_log.event,
+       activity_log.detail,
+       activity_log.created_at,
+       posts.destination,
+       posts.format,
+       posts.caption
+     FROM activity_log
+     LEFT JOIN posts
+       ON posts.id = activity_log.post_id
+     ORDER BY activity_log.created_at DESC,
+              activity_log.id DESC
+     LIMIT 100`
+  ).all();
 
+  return withCors(json({
+    activities: results || []
+  }), request);
+}
     if (url.pathname === "/api/posts" && request.method === "GET") {
       const { results } = await env.DB.prepare(
         "SELECT * FROM posts ORDER BY created_at DESC LIMIT 100"

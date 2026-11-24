@@ -119,6 +119,13 @@ async function loadPosts(){
    const body=document.createElement("p");body.textContent=p.caption;
    const meta=document.createElement("div");meta.className="muted";meta.textContent=`${p.created_at||""} ${p.scheduled_at||""}`;
    div.append(title,body,meta);
+
+if(p.error_message){
+  const err=document.createElement("p");
+  err.style.color="#ff6b6b";
+  err.textContent="ERROR: "+p.error_message;
+  div.append(err);
+}
    if(p.status==="draft"&&p.destination==="page"&&p.format!=="reel"){
     const b=document.createElement("button");b.textContent="Schedule in 1 minute";
     b.onclick=async()=>{try{await call(`/api/posts/${p.id}/approve`,{method:"POST",body:JSON.stringify({scheduled_at:new Date(Date.now()+60000).toISOString()})});loadPosts()}catch(e){alert(e.message)}};

@@ -165,11 +165,25 @@ export default {
           temperature: 0.8
         });
 
-        const caption = String(result?.response || "").trim();
+        const rawCaption =
+  result?.response ??
+  result?.choices?.[0]?.message?.content ??
+  result?.result?.response ??
+  result?.output_text ??
+  "";
 
-        if (!caption) {
-          throw new Error("AI returned an empty response.");
-        }
+const caption = (
+  typeof rawCaption === "string"
+    ? rawCaption
+    : JSON.stringify(rawCaption)
+).trim();
+
+if (!caption) {
+  throw new Error(
+    "AI returned no text. Response keys: " +
+    Object.keys(result || {}).join(", ")
+  );
+}
 
         return withCors(json({ caption }), request);
 

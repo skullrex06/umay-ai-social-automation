@@ -240,6 +240,8 @@ Requirements:
           image: "data:image/jpeg;base64," + result.image,
           media_url: mediaUrl,
           key
+          prompt
+          
         }), request);
 
 

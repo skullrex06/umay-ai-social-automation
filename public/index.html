@@ -314,7 +314,72 @@ async function runDiagnostics(){
 }
 let generatedImage = "";
 let generatedMediaUrl = "";
+async function generatePhotoPost(){
+ const topic = el("aiTopic").value.trim();
 
+ if(!topic){
+  el("aiMessage").textContent = "Enter a topic first.";
+  return;
+ }
+
+ const button = el("photoPostButton");
+ button.disabled = true;
+ button.textContent = "Generating caption and image...";
+ el("aiMessage").textContent = "Generating caption...";
+ el("imageMessage").textContent = "Please wait...";
+ el("imagePreview").style.display = "none";
+ el("downloadImage").style.display = "none";
+ el("useImageButton").style.display = "none";
+
+ try{
+  const captionResult = await call("/api/generate",{
+   method:"POST",
+   body:JSON.stringify({
+    topic,
+    niche:el("aiNiche").value,
+    language:el("aiLanguage").value,
+    tone:el("aiTone").value
+   })
+  });
+
+  if(!captionResult.caption) throw Error("No caption returned.");
+
+  el("caption").value = captionResult.caption;
+  el("aiMessage").textContent = "Caption generated. Generating image...";
+
+  const imageResult = await call("/api/generate-image",{
+   method:"POST",
+   body:JSON.stringify({
+    topic,
+    niche:el("aiNiche").value || "general"
+   })
+  });
+
+  if(!imageResult.image) throw Error("No image returned.");
+  if(!imageResult.media_url) throw Error("Image generated, but no public media URL was returned.");
+
+  generatedImage = imageResult.image;
+  generatedMediaUrl = imageResult.media_url;
+
+  el("imagePreview").src = generatedImage;
+  el("imagePreview").style.display = "block";
+  el("downloadImage").style.display = "inline-block";
+  el("useImageButton").style.display = "inline-block";
+
+  el("media").value = generatedMediaUrl;
+  el("destination").value = "page";
+  el("format").value = "photo";
+
+  el("aiMessage").textContent = "Caption and image generated.";
+  el("imageMessage").textContent = "Photo Post ready. Review the caption and image before saving.";
+  el("message").textContent = "Caption and image attached. Review, then press Save to Queue.";
+ }catch(e){
+  el("imageMessage").textContent = e.message;
+ }finally{
+  button.disabled = false;
+  button.textContent = "Generate Photo Post";
+ }
+}
 async function generateImage(){
  const topic = el("aiTopic").value.trim();
 

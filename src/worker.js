@@ -154,7 +154,54 @@ export default {
         return withCors(json({ error: "Enter an image topic." }, 400), request);
       }
 
-      const prompt = `Photorealistic cinematic editorial photograph. Subject: ${topic}. Niche: ${niche}. Square composition, professional photography, realistic details, dramatic natural lighting. No text, logo or watermark.`;
+      
+let prompt = "";
+
+try {
+  const promptResult = await env.AI.run("@cf/qwen/qwen3.8-27b", {
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert AI image prompt engineer. Convert a short topic into one detailed, visually specific image-generation prompt. Return only the prompt, no explanation."
+      },
+      {
+        role: "user",
+        content: `Create a high-quality image prompt based on this topic: ${topic}
+Niche: ${niche}
+
+Requirements:
+- Clearly describe the main subject and its appearance.
+- Create a suitable environment and background.
+- Specify camera angle, composition and perspective.
+- Describe realistic lighting, atmosphere, textures and details.
+- Use a cinematic professional photography style.
+- Make the visual directly relevant to the topic.
+- Square 1:1 composition.
+- No text, letters, logos, captions or watermarks.
+- Avoid generic or unrelated visual elements.`
+      }
+    ],
+    max_completion_tokens: 450,
+    reasoning_effort: "low",
+    chat_template_kwargs: { enable_thinking: false },
+    temperature: 0.7
+  });
+
+  const rawPrompt =
+    promptResult?.response ??
+    promptResult?.choices?.[0]?.message?.content ??
+    promptResult?.result?.response ??
+    promptResult?.output_text ??
+    "";
+
+  prompt = String(rawPrompt).trim();
+
+  if (!prompt) {
+    throw new Error("AI failed to create image prompt.");
+  }
+} catch (err) {
+  throw new Error("Image prompt generation failed: " + String(err.message || err));
+}
 
       try {
         const result = await env.AI.run(

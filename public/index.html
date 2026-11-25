@@ -81,62 +81,130 @@ body{padding:10px}
 </section>
 
 <section class="card">
-  <h3>AI Image Generator</h3>
-  <div class="muted">Generate original images from your content idea.</div>
 
-  <label>Image Topic</label>
-  <input id="imageTopic" placeholder="Example: A lone survivor stranded on a tropical island">
+<header>
+  <h1>UMAY AI SOCIAL AUTOMATION</h1>
+  <div class="muted">Social content management</div>
 
-  <button id="imageButton" onclick="generateImage()">Generate AI Image</button>
-  <div id="imageMessage" class="muted"></div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('dashboard',this)">Home</button>
+    <button class="nav-tab" onclick="showTab('create',this)">Create</button>
+    <button class="nav-tab" onclick="showTab('queue',this)">Queue</button>
+    <button class="nav-tab" onclick="showTab('system',this)">System</button>
+  </nav>
+</header>
 
-  <img id="imagePreview" style="display:none;width:100%;border-radius:12px;margin-top:14px">
+<div id="dashboard" class="page-panel active">
+  <section class="card">
+    <h3>AI Content Generator</h3>
+    <div class="muted">Generate and review content before publishing.</div>
 
-  <button id="downloadImage" style="display:none" onclick="downloadGeneratedImage()">
-    Download Image
-  </button>
-  <button id="useImageButton" style="display:none" onclick="useGeneratedImage()">
-  Use This Image in Queue
-</button>
-</section>
+    <label>Topic / Content Idea</label>
+    <input id="aiTopic" placeholder="Example: 5 survival mistakes in the jungle">
 
-<section class="card">
-  <h3>Create content queue item</h3>
-  <div class="row">
-    <div><label>Destination</label><select id="destination"><option value="page">Facebook Page</option><option value="profile">Professional Profile (manual)</option></select></div>
-    <div><label>Format</label><select id="format"><option value="text">Text</option><option value="photo">Single image</option><option value="reel">Reel (manual)</option></select></div>
-  </div>
-  <label>Caption / script</label>
-  <textarea id="caption" placeholder="Write original content and include source notes where needed"></textarea>
-  <label>Public HTTPS image URL (photo only)</label>
-  <input id="media" placeholder="https://...">
-  <button onclick="createPost()">Save to queue</button>
-  <div id="message" class="muted"></div>
-</section>
+    <label>Niche</label>
+    <input id="aiNiche" value="How to Survive">
 
-<section class="card">
-  <h3>Content queue</h3>
-  <div class="muted">Page text/photo drafts can be scheduled. Profile posts and Reels are manual tasks.</div>
-  <div id="posts" class="muted">Connect to load posts.</div>
-</section>
-  
-<section class="card">
-  <h3>System Health Check</h3>
-  <div class="muted">Check Worker, database, AI, storage and Meta configuration.</div>
-  <button onclick="runDiagnostics()">Run Health Check</button>
-  <div id="diagnosticsResult" class="muted">
-    Press Run Health Check to inspect the system.
-  </div>
-</section>
+    <label>Language</label>
+    <select id="aiLanguage">
+      <option>English</option>
+      <option>Bahasa Melayu</option>
+      <option>中文</option>
+    </select>
 
-<section class="card">
-  <h3>Activity Log</h3>
-  <div class="muted">Latest 100 system activities.</div>
-  <button class="secondary" onclick="loadActivity()">Refresh Activity</button>
-  <div id="activityList" class="muted">
-    Connect to load activity.
-  </div>
-</section>
+    <label>Writing Style</label>
+    <select id="aiTone">
+      <option value="curiosity-driven, engaging and informative">Curiosity Hook</option>
+      <option value="educational, clear and practical">Educational</option>
+      <option value="dramatic but factual">Dramatic Storytelling</option>
+      <option value="friendly and conversational">Conversational</option>
+    </select>
+
+    <button id="generateButton" onclick="generateAI()">Generate AI Caption</button>
+    <div id="aiMessage" class="muted"></div>
+  </section>
+
+  <section class="card">
+    <h3>Connection</h3>
+    <label>Worker API URL</label>
+    <input id="api" placeholder="https://your-worker.workers.dev">
+    <label>Admin token</label>
+    <input id="token" type="password" placeholder="Your ADMIN_TOKEN">
+    <button onclick="loadPosts()">Connect / Refresh</button>
+    <div id="health" class="muted"></div>
+  </section>
+</div>
+
+<div id="create" class="page-panel">
+  <section class="card">
+    <h3>AI Image Generator</h3>
+    <div class="muted">Generate original images from your content idea.</div>
+
+    <label>Image Topic</label>
+    <input id="imageTopic" placeholder="Example: A lone survivor stranded on a tropical island">
+
+    <button id="imageButton" onclick="generateImage()">Generate AI Image</button>
+    <div id="imageMessage" class="muted"></div>
+
+    <img id="imagePreview" style="display:none;width:100%;border-radius:12px;margin-top:14px">
+
+    <button id="downloadImage" style="display:none" onclick="downloadGeneratedImage()">Download Image</button>
+    <button id="useImageButton" style="display:none" onclick="useGeneratedImage()">Use This Image in Queue</button>
+  </section>
+
+  <section class="card">
+    <h3>Create Content</h3>
+    <div class="row">
+      <div>
+        <label>Destination</label>
+        <select id="destination">
+          <option value="page">Facebook Page</option>
+          <option value="profile">Professional Profile (manual)</option>
+        </select>
+      </div>
+      <div>
+        <label>Format</label>
+        <select id="format">
+          <option value="text">Text</option>
+          <option value="photo">Single image</option>
+          <option value="reel">Reel (manual)</option>
+        </select>
+      </div>
+    </div>
+    <label>Caption / script</label>
+    <textarea id="caption" placeholder="Write original content and include source notes where needed"></textarea>
+    <label>Public HTTPS image URL (photo only)</label>
+    <input id="media" placeholder="https://...">
+    <button onclick="createPost()">Save to Queue</button>
+    <div id="message" class="muted"></div>
+  </section>
+</div>
+
+<div id="queue" class="page-panel">
+  <section class="card">
+    <h3>Content Queue</h3>
+    <div class="muted">Page text/photo drafts can be scheduled. Profile posts and Reels are manual tasks.</div>
+    <button class="secondary" onclick="loadPosts()">Refresh Queue</button>
+    <div id="posts" class="muted">Connect to load posts.</div>
+  </section>
+</div>
+
+<div id="system" class="page-panel">
+  <section class="card">
+    <h3>System Health Check</h3>
+    <div class="muted">Check Worker, database, AI, storage and Meta configuration.</div>
+    <button onclick="runDiagnostics()">Run Health Check</button>
+    <div id="diagnosticsResult" class="muted">Press Run Health Check to inspect the system.</div>
+  </section>
+
+  <section class="card">
+    <h3>Activity Log</h3>
+    <div class="muted">Latest 100 system activities.</div>
+    <button class="secondary" onclick="loadActivity()">Refresh Activity</button>
+    <div id="activityList" class="muted">Connect to load activity.</div>
+  </section>
+</div>
+
 <script>
 const el=id=>document.getElementById(id);
 function config(){return {api:el("api").value.trim().replace(/\/$/,""),token:el("token").value.trim()}}

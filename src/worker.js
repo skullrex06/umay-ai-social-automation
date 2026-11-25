@@ -239,7 +239,7 @@ Requirements:
         return withCors(json({
           image: "data:image/jpeg;base64," + result.image,
           media_url: mediaUrl,
-          key
+          key,
           prompt
           
         }), request);
